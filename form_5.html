@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nepali Speech Emotion Validation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem;
+        }
+        
+        .header-content {
+            max-width: 640px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .header-subtitle {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        
+        .progress-container {
+            text-align: right;
+        }
+        
+        .progress-text {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 0.25rem;
+        }
+        
+        .progress-bar {
+            width: 120px;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Main Content */
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 3rem;
+        }
+        
+        /* Intro Section */
+        .intro-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .intro-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+        
+        .intro-text {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+        
+        .instructions {
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+        
+        /* Demographics Section */
+        .demographics-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #f1f5f9;
+        }
+        
+        .field-group {
+            margin-bottom: 1rem;
+        }
+        
+        .field-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+        }
+        
+        .field-select, .field-input, .field-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        
+        .field-select:focus, .field-input:focus, .field-textarea:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+        
+        .field-select option {
+            background: #1e293b;
+        }
+        
+        /* Clip Cards */
+        .clip-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .clip-card.answered {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .clip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .clip-number {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .clip-status {
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        
+        .clip-card.answered .clip-status {
+            color: #10b981;
+        }
+        
+        .audio-container {
+            margin-bottom: 1rem;
+        }
+        
+        .audio-player {
+            width: 100%;
+            height: 40px;
+            border-radius: 8px;
+        }
+        
+        .audio-player::-webkit-media-controls-panel {
+            background: #334155;
+        }
+        
+        .question-text {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .option-label {
+            cursor: pointer;
+        }
+        
+        .option-label input {
+            display: none;
+        }
+        
+        .option-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0.5rem;
+            background: rgba(51, 65, 85, 0.5);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .option-label:hover .option-box {
+            background: rgba(51, 65, 85, 0.8);
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        .option-label input:checked + .option-box {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+        }
+        
+        .emoji {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .label-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+        
+        .label-nepali {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        
+        /* End Section */
+        .end-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .field-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Success Message */
+        .success-container {
+            display: none;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+        
+        .success-text {
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .options-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .option-box {
+                padding: 0.75rem 0.25rem;
+            }
+            
+            .emoji {
+                font-size: 1.5rem;
+            }
+            
+            .label-text {
+                font-size: 0.75rem;
+            }
+            
+            .label-nepali {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div>
+                <div class="header-title">Nepali SER Validation</div>
+                <div class="header-subtitle">5th Year • IOE Pulchowk</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-text"><span id="progressCount">0</span>/10 completed</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Form -->
+    <main class="container" id="formContainer">
+        <form id="validationForm">
+            <!-- Intro -->
+            <div class="intro-section">
+                <h1 class="intro-title">🎧 Speech Emotion Recognition Study</h1>
+                <p class="intro-text">
+                    Help us build Nepal's first speech emotion dataset! Listen to 10 short audio clips 
+                    and identify the emotion expressed in each.
+                </p>
+                <ul class="instructions">
+                    <li>🎧 Please use headphones for best results</li>
+                    <li>⏱️ Takes approximately 5-7 minutes</li>
+                    <li>🔊 Each clip is a short Nepali sentence</li>
+                </ul>
+            </div>
+            
+            <!-- Demographics -->
+            <div class="demographics-section">
+                <h2 class="section-title">📋 About You</h2>
+                
+                <div class="field-group">
+                    <label class="field-label">Province you grew up in *</label>
+                    <select name="province" class="field-select" required>
+                        <option value="">Select province...</option>
+                        <option value="Province 1 (Koshi)">Province 1 (Koshi)</option>
+<option value="Madhesh Province">Madhesh Province</option>
+<option value="Bagmati Province">Bagmati Province</option>
+<option value="Gandaki Province">Gandaki Province</option>
+<option value="Lumbini Province">Lumbini Province</option>
+<option value="Karnali Province">Karnali Province</option>
+<option value="Sudurpashchim Province">Sudurpashchim Province</option>
+<option value="Outside Nepal">Outside Nepal</option>
+                    </select>
+                </div>
+                
+                <div class="field-group">
+                    <label class="field-label">Mother Tongue *</label>
+                    <select name="mother_tongue" class="field-select" required>
+                        <option value="">Select language...</option>
+                        <option value="Nepali">Nepali</option>
+<option value="Maithili">Maithili</option>
+<option value="Bhojpuri">Bhojpuri</option>
+<option value="Newari">Newari</option>
+<option value="Tamang">Tamang</option>
+<option value="Tharu">Tharu</option>
+<option value="Gurung">Gurung</option>
+<option value="Magar">Magar</option>
+<option value="Sherpa">Sherpa</option>
+<option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="field-group" id="otherTongueGroup" style="display: none;">
+                    <label class="field-label">Please specify your mother tongue *</label>
+                    <input type="text" name="other_tongue" class="field-input" placeholder="Enter your mother tongue">
+                </div>
+            </div>
+            
+            <!-- Audio Clips -->
+            <div class="clips-section">
+                <h2 class="section-title" style="margin-bottom: 1rem;">🎵 Audio Clips</h2>
+                
+            <!-- Clip 1 -->
+            <div class="clip-card" data-clip="1">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 1 of 10</span>
+                    <span class="clip-status" id="status_1">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_01.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_01" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_01" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_01" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 2 -->
+            <div class="clip-card" data-clip="2">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 2 of 10</span>
+                    <span class="clip-status" id="status_2">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_02.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_02" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_02" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_02" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 3 -->
+            <div class="clip-card" data-clip="3">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 3 of 10</span>
+                    <span class="clip-status" id="status_3">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_03.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_03" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_03" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_03" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 4 -->
+            <div class="clip-card" data-clip="4">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 4 of 10</span>
+                    <span class="clip-status" id="status_4">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_04.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_04" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_04" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_04" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 5 -->
+            <div class="clip-card" data-clip="5">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 5 of 10</span>
+                    <span class="clip-status" id="status_5">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_05.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_05" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_05" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_05" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 6 -->
+            <div class="clip-card" data-clip="6">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 6 of 10</span>
+                    <span class="clip-status" id="status_6">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_06.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_06" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_06" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_06" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 7 -->
+            <div class="clip-card" data-clip="7">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 7 of 10</span>
+                    <span class="clip-status" id="status_7">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_07.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_07" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_07" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_07" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 8 -->
+            <div class="clip-card" data-clip="8">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 8 of 10</span>
+                    <span class="clip-status" id="status_8">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_08.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_08" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_08" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_08" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 9 -->
+            <div class="clip-card" data-clip="9">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 9 of 10</span>
+                    <span class="clip-status" id="status_9">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_09.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_09" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_09" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_09" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Clip 10 -->
+            <div class="clip-card" data-clip="10">
+                <div class="clip-header">
+                    <span class="clip-number">Clip 10 of 10</span>
+                    <span class="clip-status" id="status_10">○</span>
+                </div>
+                
+                <div class="audio-container">
+                    <audio controls preload="metadata" class="audio-player">
+                        <source src="https://res.cloudinary.com/dwq0zaceg/video/upload/ser_validation/form_5/clip_10.wav" type="audio/wav">
+                        Your browser does not support audio.
+                    </audio>
+                </div>
+                
+                <p class="question-text">के भावना सुन्नुहुन्छ? (What emotion do you hear?)</p>
+                
+                <div class="options-grid">
+                    <label class="option-label">
+                        <input type="radio" name="clip_10" value="H" required>
+                        <span class="option-box">
+                            <span class="emoji">😊</span>
+                            <span class="label-text">Happy</span>
+                            <span class="label-nepali">खुशी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_10" value="S">
+                        <span class="option-box">
+                            <span class="emoji">😢</span>
+                            <span class="label-text">Sad</span>
+                            <span class="label-nepali">दुखी</span>
+                        </span>
+                    </label>
+                    <label class="option-label">
+                        <input type="radio" name="clip_10" value="N">
+                        <span class="option-box">
+                            <span class="emoji">😐</span>
+                            <span class="label-text">Neutral</span>
+                            <span class="label-nepali">तटस्थ</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            </div>
+            
+            <!-- End Section -->
+            <div class="end-section">
+                <h2 class="section-title">📝 Almost Done!</h2>
+                
+                <div class="field-group">
+                    <label class="field-label">Email (optional - for research updates)</label>
+                    <input type="email" name="email" class="field-input" placeholder="your@email.com">
+                </div>
+                
+                <div class="field-group">
+                    <label class="field-label">Comments or Feedback (optional)</label>
+                    <textarea name="comments" class="field-textarea" placeholder="Any thoughts about the audio quality, difficulty, or suggestions..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Submit -->
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span>Submit Responses</span>
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
+            </button>
+        </form>
+    </main>
+
+    <!-- Success Message -->
+    <div class="container success-container" id="successContainer">
+        <div class="success-icon">🎉</div>
+        <h2 class="success-title">धन्यवाद!</h2>
+        <p class="success-text">
+            Your response has been recorded successfully.<br>
+            You're helping build Nepal's first speech emotion recognition dataset.
+        </p>
+        <p style="color: #64748b; font-size: 0.85rem;">
+            IOE, Pulchowk Campus
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Nepali Speech Emotion Recognition Research</p>
+        <p>IOE, Pulchowk Campus • 2025</p>
+    </footer>
+
+    <script>
+        // Configuration
+        const FORM_ID = 5;
+        const YEAR = "5th Year";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaXVvdjgkJRQE0VNoHkk_AlB_Kavs8RrcVdw0aJrVWUdf0aEU-ucJihWuV_V_jq9ul/exec";
+        
+        // Clip mapping (for backend reference)
+        const CLIP_MAPPING = {"clip_01": "A04S02NT1.wav", "clip_02": "A08S01ST1.wav", "clip_03": "A02S07NT1.wav", "clip_04": "A02S04HT2.wav", "clip_05": "A05S04HT2.wav", "clip_06": "A02S06HT2.wav", "clip_07": "A03S02ST1.wav", "clip_08": "A01S06NT2.wav", "clip_09": "A06S01ST1.wav", "clip_10": "A05S03HT1.wav"};
+        
+        // Elements
+        const form = document.getElementById('validationForm');
+        const formContainer = document.getElementById('formContainer');
+        const successContainer = document.getElementById('successContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressCount = document.getElementById('progressCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const motherTongueSelect = document.querySelector('select[name="mother_tongue"]');
+        const otherTongueGroup = document.getElementById('otherTongueGroup');
+        
+        const totalClips = 10;
+        
+        // Show/hide "Other" tongue field
+        motherTongueSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'Other') {
+                otherTongueGroup.style.display = 'block';
+                otherTongueGroup.querySelector('input').required = true;
+            } else {
+                otherTongueGroup.style.display = 'none';
+                otherTongueGroup.querySelector('input').required = false;
+            }
+        });
+        
+        // Update progress on clip selection
+        document.querySelectorAll('.clip-card input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', updateProgress);
+        });
+        
+        function updateProgress() {
+            const clipCards = document.querySelectorAll('.clip-card');
+            let answered = 0;
+            
+            clipCards.forEach((card, index) => {
+                const clipNum = index + 1;
+                const isAnswered = card.querySelector('input[type="radio"]:checked');
+                const status = document.getElementById(`status_${clipNum}`);
+                
+                if (isAnswered) {
+                    answered++;
+                    card.classList.add('answered');
+                    status.textContent = '✓';
+                } else {
+                    card.classList.remove('answered');
+                    status.textContent = '○';
+                }
+            });
+            
+            const percent = (answered / totalClips) * 100;
+            progressFill.style.width = percent + '%';
+            progressCount.textContent = answered;
+        }
+        
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div><span>Submitting...</span>';
+            
+            // Collect form data
+            const formData = new FormData(form);
+            const responses = {};
+            
+            for (let [key, value] of formData.entries()) {
+                responses[key] = value;
+            }
+            
+            // Add metadata
+            const payload = {
+                form_id: FORM_ID,
+                year: YEAR,
+                timestamp: new Date().toISOString(),
+                user_agent: navigator.userAgent,
+                ...responses
+            };
+            
+            try {
+                // Send to Google Sheets
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Show success (we can't check response with no-cors, so assume success)
+                formContainer.style.display = 'none';
+                successContainer.style.display = 'block';
+                window.scrollTo(0, 0);
+                
+                // Prevent resubmission
+                localStorage.setItem(`ser_form_${FORM_ID}_submitted`, 'true');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error submitting form. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Submit Responses</span>';
+            }
+        });
+        
+        // Check for previous submission
+        if (localStorage.getItem(`ser_form_${FORM_ID}_submitted`) === 'true') {
+            // Optional: Show message or allow resubmission
+            // formContainer.innerHTML = '<p style="text-align:center;padding:2rem;">You have already submitted this form. Thank you!</p>';
+        }
+    </script>
+</body>
+</html>
